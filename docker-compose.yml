@@ -3,6 +3,7 @@
 #   fetch   one-shot: downloads SNAPPYMAIL_VERSION into ./snappymail
 #   php     PHP-FPM with every extension SnappyMail uses (php/Dockerfile)
 #   nginx   official image, serves the files and passes PHP to "php"
+#   valkey  official image, cache for the "Cache Redis" plugin (no disk data)
 #
 # Start: docker compose up -d
 # Settings that differ per host go in .env (see README): HTTP_PORT, TZ,
@@ -53,6 +54,8 @@ services:
     depends_on:
       fetch:
         condition: service_completed_successfully
+      valkey:
+        condition: service_healthy
     healthcheck:
       # php-fpm accepts connections on its FastCGI port
       test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
@@ -80,4 +83,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    logging: *logging
+
+  valkey:
+    image: valkey/valkey:9-alpine
+    restart: unless-stopped
+    # Cache only: no snapshots, no append-only file, oldest keys go first.
+    command: ["valkey-server", "--save", "", "--appendonly", "no",
+              "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep -q PONG"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     logging: *logging
