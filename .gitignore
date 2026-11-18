@@ -1,0 +1,5 @@
+snappymail/
+data/
+.env
+*.swp
+*~
