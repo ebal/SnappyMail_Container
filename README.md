@@ -248,6 +248,7 @@ start.
 | `ci/rebuild.sh` | Local rebuild: build, compare, apply. |
 | `.github/workflows/publish.yml` | Weekly build and publish to Docker Hub. |
 | `.github/workflows/dockerhub-description.yml` | Copies this README to the Docker Hub page. |
+| `VERSION` | Version of this repository (SemVer). The image tags follow the PHP version instead. |
 | `snappymail/`, `data/`, `.env` | The release, the data and the host settings. Not in git. Back up `data/`. |
 
 ## Troubleshooting

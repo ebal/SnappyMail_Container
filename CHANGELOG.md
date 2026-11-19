@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-19
+
 ### Added
 
 - Run SnappyMail 3.1.3 with Docker Compose: official nginx and Valkey images, and a PHP image built from php:8.5-fpm-alpine.
@@ -18,3 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rebuild locally with `ci/rebuild.sh`, which applies the new image only when it changed.
 - Set the Valkey image tag with `VALKEY_IMAGE_TAG` in `.env` (default `9-alpine`).
 - Copy the README to the Docker Hub page of the image when it changes.
+
+[unreleased]: https://github.com/ebal/SnappyMail_Container/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/ebal/SnappyMail_Container/releases/tag/v1.0.0
