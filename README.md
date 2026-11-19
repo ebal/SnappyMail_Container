@@ -212,7 +212,7 @@ variables > Actions:
 | --- | --- | --- |
 | Variable | `DOCKERHUB_USERNAME` | Your Docker Hub user or organization |
 | Variable | `DOCKERHUB_REPOSITORY` | The image name. Optional, default `snappymail-php`. |
-| Secret | `DOCKERHUB_TOKEN` | A Docker Hub access token with Read & Write access. Read, Write, Delete also lets `dockerhub-description.yml` copy this README to Docker Hub. |
+| Secret | `DOCKERHUB_TOKEN` | A Docker Hub access token with Read & Write access, nothing more |
 
 The image of this repository is
 [`3bal/snappymail-php`](https://hub.docker.com/r/3bal/snappymail-php). To publish
@@ -247,7 +247,6 @@ start.
 | `ci/fingerprint.sh` | Hash of the packages and versions in a PHP image. |
 | `ci/rebuild.sh` | Local rebuild: build, compare, apply. |
 | `.github/workflows/publish.yml` | Weekly build and publish to Docker Hub. |
-| `.github/workflows/dockerhub-description.yml` | Copies this README to the Docker Hub page. |
 | `VERSION` | Version of this repository (SemVer). The image tags follow the PHP version instead. |
 | `snappymail/`, `data/`, `.env` | The release, the data and the host settings. Not in git. Back up `data/`. |
 

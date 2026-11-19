@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Stop copying the README to the Docker Hub page: it needs a token with delete rights. The Docker Hub token now needs Read & Write only.
+
 ## [1.0.0] - 2026-11-19
 
 ### Added
