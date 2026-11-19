@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build the PHP image every week on GitHub Actions and publish it to Docker Hub only when its packages or versions changed.
 - Rebuild locally with `ci/rebuild.sh`, which applies the new image only when it changed.
 - Set the Valkey image tag with `VALKEY_IMAGE_TAG` in `.env` (default `9-alpine`).
+- Copy the README to the Docker Hub page of the image when it changes.
