@@ -7,7 +7,7 @@
 #
 # Start: docker compose up -d
 # Settings that differ per host go in .env (see README): HTTP_PORT, TZ,
-# SNAPPYMAIL_PHP_IMAGE.
+# SNAPPYMAIL_PHP_IMAGE, VALKEY_IMAGE_TAG.
 
 name: snappymail
 
@@ -86,7 +86,7 @@ services:
     logging: *logging
 
   valkey:
-    image: valkey/valkey:9-alpine
+    image: valkey/valkey:${VALKEY_IMAGE_TAG:-9-alpine}
     restart: unless-stopped
     # Cache only: no snapshots, no append-only file, oldest keys go first.
     command: ["valkey-server", "--save", "", "--appendonly", "no",

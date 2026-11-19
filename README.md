@@ -110,6 +110,7 @@ All with PHP 8.5.12. "Missing" lists the extensions from the list above.
    HTTP_PORT=8080                                 # host port of the web mail
    TZ=UTC                                         # time zone of PHP
    SNAPPYMAIL_PHP_IMAGE=<user>/snappymail-php:8.5 # the published image (default: build locally)
+   VALKEY_IMAGE_TAG=9-alpine                      # valkey image tag, for example a fixed 9.1.4-alpine
    ```
 
 3. Start the stack. Without `SNAPPYMAIL_PHP_IMAGE`, the first start builds the PHP image (about 4 minutes):
