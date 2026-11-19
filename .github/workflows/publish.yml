@@ -1,12 +1,17 @@
-# Build the php image every week and publish it to Docker Hub only when it
-# changed, so PHP and Alpine security updates arrive within a week.
+# Build the SnappyMail image every week and publish it to Docker Hub only
+# when it changed: a new SnappyMail release, or PHP / Debian updates.
+# Nothing is pushed unless ci/smoke-test.sh passes.
 #
 # Repository settings (Settings > Secrets and variables > Actions):
 #   variable DOCKERHUB_USERNAME   Docker Hub user or organisation
-#   variable DOCKERHUB_REPOSITORY image name, default "snappymail-php"
-#   secret   DOCKERHUB_TOKEN      Docker Hub access token (Read & Write)
+#   variable DOCKERHUB_REPOSITORY image name, default "snappymail"
+#   secret   DOCKERHUB_TOKEN      Docker Hub access token, Read & Write only
 #
-# Tags: 8.5 (moves), 8.5-YYYYMMDD (fixed), latest (moves).
+# Tags: <snappymail>-php8.6 (moves), <snappymail>-php8.6-YYYYMMDD (fixed),
+# latest (moves).
+#
+# GitHub disables a scheduled workflow after 60 days without commits and
+# sends an e-mail first: run it once by hand to enable it again.
 
 name: publish
 
@@ -17,43 +22,68 @@ on:
   push:
     branches: [main]
     paths:
-      - "php/**"
-      - "ci/fingerprint.sh"
+      - "Dockerfile"
+      - "config/**"
+      - "keys/**"
+      - "ci/**"
       - ".github/workflows/publish.yml"
 
 permissions:
   contents: read
-  actions: write   # keep the weekly schedule enabled (last step)
 
 concurrency:
   group: publish
   cancel-in-progress: false
 
 env:
-  IMAGE: docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY || 'snappymail-php' }}
-  TAG: "8.5"
+  IMAGE: docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY || 'snappymail' }}
+  PHP: "8.6"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Build without cache, from the newest base image
-        run: docker build --pull --no-cache -t snappymail-php:candidate php
+      - name: Find the newest SnappyMail release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(gh api repos/the-djmaze/snappymail/releases/latest --jq .tag_name)
+          version=${version#v}
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "unexpected SnappyMail version: '$version'" >&2
+            exit 1
+          fi
+          echo "SnappyMail $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build without cache, from the newest base images
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          docker build --pull --no-cache \
+            --build-arg "PHP_IMAGE=php:$PHP-apache" \
+            --build-arg "SNAPPYMAIL_VERSION=$VERSION" \
+            -t snappymail:candidate .
+
+      - name: Test the image
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: ci/smoke-test.sh snappymail:candidate "$VERSION"
 
       - name: Compare with the published image
         id: compare
         run: |
-          new=$(ci/fingerprint.sh snappymail-php:candidate)
-          if docker pull -q "$IMAGE:$TAG" >/dev/null 2>&1; then
-            old=$(ci/fingerprint.sh "$IMAGE:$TAG")
+          new=$(ci/fingerprint.sh snappymail:candidate)
+          if docker pull -q "$IMAGE:latest" >/dev/null 2>&1; then
+            old=$(ci/fingerprint.sh "$IMAGE:latest")
           else
             old=none
           fi
-          php=$(docker run --rm --entrypoint php snappymail-php:candidate -r 'echo PHP_VERSION;')
-          echo "php $php, fingerprint new=$new published=$old"
+          echo "fingerprint new=$new published=$old"
           # A scheduled run publishes only a changed image; a push or a manual
           # run always publishes.
           if [ "$new" != "$old" ] || [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
@@ -64,23 +94,17 @@ jobs:
 
       - name: Log in to Docker Hub
         if: steps.compare.outputs.publish == 'true'
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push
         if: steps.compare.outputs.publish == 'true'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
         run: |
-          for tag in "$TAG" "$TAG-$(date -u +%Y%m%d)" latest; do
-            docker tag snappymail-php:candidate "$IMAGE:$tag"
+          for tag in "$VERSION-php$PHP" "$VERSION-php$PHP-$(date -u +%Y%m%d)" latest; do
+            docker tag snappymail:candidate "$IMAGE:$tag"
             docker push -q "$IMAGE:$tag"
           done
-
-      # GitHub disables a scheduled workflow after 60 days without activity
-      # in the repository. Enabling it again from the workflow keeps it alive.
-      - name: Keep the weekly schedule enabled
-        if: github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method PUT "repos/${{ github.repository }}/actions/workflows/publish.yml/enable"

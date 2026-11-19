@@ -1,7 +1,8 @@
 #!/bin/bash
-# Print a short hash of everything that decides what runs in a php image:
-# the Alpine packages, the PHP version and every extension with its version.
-# Two builds with the same fingerprint are the same for SnappyMail.
+# Print a short hash of everything that decides what runs in an image:
+# the Debian packages, the PHP version, every extension with its version,
+# and the SnappyMail version. Two builds with the same fingerprint are the
+# same for SnappyMail.
 #
 #   ci/fingerprint.sh IMAGE
 
@@ -16,6 +17,7 @@ fi
 
 # shellcheck disable=SC2016  # the $ signs belong to the shell and PHP inside the container
 docker run --rm --entrypoint sh "$1" -c '
-  apk info -v 2>/dev/null | sort
+  dpkg-query -W -f "\${Package} \${Version}\n" | sort
   php -r "echo PHP_VERSION, PHP_EOL; foreach (get_loaded_extensions() as \$e) echo \$e, \" \", phpversion(\$e), PHP_EOL;"
+  ls /var/www/html/snappymail/v
 ' | sha256sum | cut -c1-16
