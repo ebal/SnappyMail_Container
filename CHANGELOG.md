@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** build one image, `3bal/snappymail`, with SnappyMail inside, on the official `php:8.6-apache` image. The `fetch` and `nginx` services are gone; the stack is `snappymail` and `valkey`.
+- **Breaking:** run Apache as `www-data` with uid 82 on port 8080, so no process runs as root. Point a reverse proxy to port 8080.
+- Check the SnappyMail download with the SnappyMail release key instead of a checksum.
+- Build and publish the newest SnappyMail release every week, not only PHP and Debian updates.
+- Test every image with `ci/smoke-test.sh` before it is published.
+- Run both services read-only, without Linux capabilities, and with `no-new-privileges`.
+- Pin the GitHub actions to commit hashes and give the workflow read access only.
+- Keep plugins that are already enabled when `scripts/enable-valkey-cache.sh` enables the cache.
+
 ### Removed
 
+- Remove the `fetch` and `nginx` services, `php/Dockerfile`, `config/nginx.conf`, `scripts/fetch-snappymail.sh` and `ci/rebuild.sh`.
+- Remove the workflow step that kept the weekly schedule enabled: it needed write access to GitHub Actions.
 - Stop copying the README to the Docker Hub page: it needs a token with delete rights. The Docker Hub token now needs Read & Write only.
 
 ## [1.0.0] - 2026-11-19
