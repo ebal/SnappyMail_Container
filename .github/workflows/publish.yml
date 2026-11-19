@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build without cache, from the newest base image
         run: docker build --pull --no-cache -t snappymail-php:candidate php
@@ -64,7 +64,7 @@ jobs:
 
       - name: Log in to Docker Hub
         if: steps.compare.outputs.publish == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
