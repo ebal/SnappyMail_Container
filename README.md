@@ -5,8 +5,9 @@ Docker Compose. It uses official images for nginx and Valkey, and a small PHP
 image built from the official `php:8.5-fpm-alpine` image with every PHP
 extension that SnappyMail can use. SnappyMail itself is downloaded from its
 GitHub release and kept on disk, outside the images. A weekly GitHub Actions
-job builds the PHP image again and publishes it to Docker Hub when PHP or
-Alpine received an update.
+job builds the PHP image again and publishes it to Docker Hub as
+[`3bal/snappymail-php`](https://hub.docker.com/r/3bal/snappymail-php) when PHP
+or Alpine received an update.
 
 - Web mail: `http://<host>:8080/`
 - Admin panel: `http://<host>:8080/?admin`
@@ -33,7 +34,7 @@ flowchart LR
     files["./snappymail<br/>SnappyMail release"]
     data["./data<br/>settings, contacts, logs"]
     gha["GitHub Actions<br/>every Monday"]
-    hub["Docker Hub<br/>snappymail-php image"]
+    hub["Docker Hub<br/>3bal/snappymail-php"]
 
     you --> nginx --> php --> valkey
     fetch --> files
@@ -104,16 +105,16 @@ All with PHP 8.5.12. "Missing" lists the extensions from the list above.
    cd snappymail
    ```
 
-2. Optional: create `.env` for the settings of this host. Without it, the defaults apply:
+2. Create `.env` for the settings of this host. Each line is optional; without it, the default applies:
 
    ```bash
    HTTP_PORT=8080                                 # host port of the web mail
    TZ=UTC                                         # time zone of PHP
-   SNAPPYMAIL_PHP_IMAGE=<user>/snappymail-php:8.5 # the published image (default: build locally)
+   SNAPPYMAIL_PHP_IMAGE=3bal/snappymail-php:8.5   # the published image (default: build locally)
    VALKEY_IMAGE_TAG=9-alpine                      # valkey image tag, for example a fixed 9.1.4-alpine
    ```
 
-3. Start the stack. Without `SNAPPYMAIL_PHP_IMAGE`, the first start builds the PHP image (about 4 minutes):
+3. Start the stack. With `SNAPPYMAIL_PHP_IMAGE=3bal/snappymail-php:8.5`, Docker pulls the published PHP image. Without it, the first start builds the PHP image (about 4 minutes):
 
    ```bash
    docker compose up -d --wait
@@ -129,7 +130,7 @@ All with PHP 8.5.12. "Missing" lists the extensions from the list above.
    SERVICE   IMAGE                    STATUS
    fetch     alpine:3.24              Exited (0)
    nginx     nginx:stable-alpine      Up (healthy)
-   php       snappymail-php:8.5       Up (healthy)
+   php       3bal/snappymail-php:8.5  Up (healthy)
    valkey    valkey/valkey:9-alpine   Up (healthy)
    ```
 
@@ -175,7 +176,7 @@ All with PHP 8.5.12. "Missing" lists the extensions from the list above.
 
 ### Update PHP, nginx and Valkey
 
-With a published image (`SNAPPYMAIL_PHP_IMAGE` set), pull the new images:
+With the published image (`SNAPPYMAIL_PHP_IMAGE=3bal/snappymail-php:8.5`), pull the new images:
 
 ```bash
 docker compose pull && docker compose up -d --wait
@@ -213,8 +214,10 @@ variables > Actions:
 | Variable | `DOCKERHUB_REPOSITORY` | The image name. Optional, default `snappymail-php`. |
 | Secret | `DOCKERHUB_TOKEN` | A Docker Hub access token with Read & Write access |
 
-The job pushes three tags: `8.5` and `latest`, which move to each new build,
-and `8.5-YYYYMMDD`, which stays. GitHub disables a scheduled workflow after 60
+The image of this repository is
+[`3bal/snappymail-php`](https://hub.docker.com/r/3bal/snappymail-php). To publish
+from a fork, set your own values. The job pushes three tags: `8.5` and `latest`,
+which move to each new build, and `8.5-YYYYMMDD`, which stays. GitHub disables a scheduled workflow after 60
 days without activity in the repository. The last step of the job enables the
 workflow again on each scheduled run.
 
