@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-20
+
 ### Changed
 
 - **Breaking:** build one image, `3bal/snappymail`, with SnappyMail inside, on the official `php:8.6-apache` image. The `fetch` and `nginx` services are gone; the stack is `snappymail` and `valkey`.
@@ -16,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test every image with `ci/smoke-test.sh` before it is published.
 - Run both services read-only, without Linux capabilities, and with `no-new-privileges`.
 - Pin the GitHub actions to commit hashes and give the workflow read access only.
-- Keep plugins that are already enabled when `scripts/enable-valkey-cache.sh` enables the cache.
 - Install the `gpg` program for PGP, which SnappyMail uses instead of the `gnupg` extension.
 - Install `mbstring`, which the `php:8.6-apache` image does not include.
 
@@ -26,6 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove the `fetch` and `nginx` services, `php/Dockerfile`, `config/nginx.conf`, `scripts/fetch-snappymail.sh` and `ci/rebuild.sh`.
 - Remove the workflow step that kept the weekly schedule enabled: it needed write access to GitHub Actions.
 - Stop copying the README to the Docker Hub page: it needs a token with delete rights. The Docker Hub token now needs Read & Write only.
+- Stop publishing `3bal/snappymail-php`; the repository is deleted from Docker Hub. Use `3bal/snappymail`.
+
+### Fixed
+
+- Keep plugins that are already enabled when `scripts/enable-valkey-cache.sh` enables the cache.
+
+### Security
+
+- Build on PHP 8.6.0, which fixes CVE-2026-129474 (use-after-free in magic method backtraces, remote code execution) and CVE-2026-129182.
 
 ## [1.0.0] - 2026-11-19
 
@@ -41,5 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set the Valkey image tag with `VALKEY_IMAGE_TAG` in `.env` (default `9-alpine`).
 - Copy the README to the Docker Hub page of the image when it changes.
 
-[unreleased]: https://github.com/ebal/SnappyMail_Container/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/ebal/SnappyMail_Container/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/ebal/SnappyMail_Container/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/ebal/SnappyMail_Container/releases/tag/v1.0.0
