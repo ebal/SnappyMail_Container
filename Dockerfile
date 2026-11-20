@@ -52,8 +52,14 @@ LABEL org.opencontainers.image.title="SnappyMail" \
       org.opencontainers.image.licenses="AGPL-3.0-only"
 
 COPY --from=mlocati/php-extension-installer:2.13.2 /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions intl gd zip apcu gnupg tidy ldap imagick \
+RUN install-php-extensions intl gd zip tidy ldap mbstring \
  && rm /usr/local/bin/install-php-extensions
+
+# PGP: SnappyMail runs the gpg program (it leaves the PECL gnupg extension
+# switched off), so the image needs gpg and gpg-agent.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gnupg \
+ && rm -rf /var/lib/apt/lists/*
 
 # www-data with uid/gid 82, so data folders from Alpine-based setups
 # (djmaze/snappymail, php:*-alpine) keep working without a chown.

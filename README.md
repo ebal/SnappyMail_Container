@@ -58,16 +58,19 @@ plugin.
 
 ### PHP extensions
 
-The image adds `intl gd zip apcu gnupg tidy ldap imagick` to the official
-image. The admin panel of SnappyMail lists some other extensions as missing.
-They are not needed:
+The image adds `intl gd zip tidy ldap mbstring` to the official image
+(`php:8.6-apache` has no `mbstring`, which SnappyMail needs), and the `gpg`
+program for PGP. The admin panel of SnappyMail lists some other extensions as
+missing. They are not needed:
 
 | Extension | Reason |
 | --- | --- |
+| `gnupg` | SnappyMail keeps this extension switched off and runs the `gpg` program instead. It does not build on PHP 8.6 yet. |
+| `apcu` | SnappyMail uses it only when `APP_USE_APCU_CACHE` is set; Valkey is the cache. Its release for PHP 8.6 is pending. |
+| `imagick`, `gmagick` | SnappyMail makes thumbnails with `gd`. `imagick` 3.8.1 does not build on PHP 8.6 yet. |
 | `redis` | The "Cache Redis" plugin includes its own client. |
 | `uuid`, `xxtea` | SnappyMail has its own PHP code for these. The extensions are only faster. |
 | `pdo_mysql`, `pdo_pgsql` | Only for a MySQL or PostgreSQL contacts database. SQLite is used. |
-| `gmagick` | An alternative to `imagick`. The two cannot be loaded together. |
 
 ## Installation
 
@@ -222,7 +225,7 @@ owner, uid 82. Copy the data of the old container into `./data`.
 | `config/php.ini` | Upload size, memory, time zone. |
 | `keys/snappymail-releases.asc` | The SnappyMail release key, as shipped in SnappyMail releases. |
 | `scripts/enable-valkey-cache.sh` | Installs and enables the "Cache Redis" plugin for Valkey. |
-| `ci/smoke-test.sh` | Starts an image and checks pages, protected folders, user and extensions. |
+| `ci/smoke-test.sh` | Starts an image and checks pages, protected folders, user, extensions and `gpg`. |
 | `ci/fingerprint.sh` | Hash of the packages and versions in an image. |
 | `.github/workflows/publish.yml` | Weekly build, test and publish to Docker Hub. |
 | `VERSION` | Version of this repository (SemVer). The image tags follow SnappyMail and PHP instead. |

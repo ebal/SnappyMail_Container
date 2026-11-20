@@ -17,9 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Run both services read-only, without Linux capabilities, and with `no-new-privileges`.
 - Pin the GitHub actions to commit hashes and give the workflow read access only.
 - Keep plugins that are already enabled when `scripts/enable-valkey-cache.sh` enables the cache.
+- Install the `gpg` program for PGP, which SnappyMail uses instead of the `gnupg` extension.
+- Install `mbstring`, which the `php:8.6-apache` image does not include.
 
 ### Removed
 
+- Remove the PHP extensions `apcu`, `gnupg` and `imagick`: they do not build on PHP 8.6 yet, and SnappyMail works without them (Valkey cache, `gpg` program, `gd`).
 - Remove the `fetch` and `nginx` services, `php/Dockerfile`, `config/nginx.conf`, `scripts/fetch-snappymail.sh` and `ci/rebuild.sh`.
 - Remove the workflow step that kept the weekly schedule enabled: it needed write access to GitHub Actions.
 - Stop copying the README to the Docker Hub page: it needs a token with delete rights. The Docker Hub token now needs Read & Write only.

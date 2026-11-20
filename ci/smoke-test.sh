@@ -11,7 +11,7 @@ set -euo pipefail
 
 readonly E_USAGE=64
 readonly E_FAILED=1
-readonly EXTENSIONS="intl gd zip apcu gnupg tidy ldap imagick pdo_sqlite sodium curl mbstring openssl"
+readonly EXTENSIONS="intl gd zip tidy ldap pdo_sqlite sodium curl mbstring openssl"
 
 if [ $# -ne 2 ]; then
   echo "usage: $0 IMAGE VERSION" >&2
@@ -79,6 +79,7 @@ check "data folder is written (SnappyMail installed itself)" \
   in_container test -f /var/lib/snappymail/_data_/_default_/configs/application.ini
 check "no version banner in the Server header" \
   sh -c "docker exec $name curl -sI http://127.0.0.1:8080/ | grep -qi '^Server: Apache\s*\$'"
+check "gpg program for PGP" sh -c "docker exec $name gpg --version >/dev/null"
 for ext in $EXTENSIONS; do
   check "php extension $ext" in_container php -r "exit(extension_loaded('$ext') ? 0 : 1);"
 done
